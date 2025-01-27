@@ -1,8 +1,13 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
+use App\Jobs\SendMessageJob;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+
+Schedule::job(new SendMessageJob)->everyMinute();
+
+// Artisan::command('schedule:run', function () {
+//     $schedule = app(Schedule::class);
+//     $schedule->job(new SendMessageJob, 'default')->everyMinute();
+// })->describe('Run the scheduled jobs');

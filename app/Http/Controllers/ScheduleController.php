@@ -21,6 +21,8 @@ class ScheduleController extends Controller
             'platforms' => $platforms,
         ]);
 
+        session()->flash('status', 'Votre message a été programmé avec succès !');
+
         return redirect()->route('dashboard');
     }
 }
