@@ -39,7 +39,10 @@
                 </div>
 
                 <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Planifier</button>
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" name="action" value="store">Planifier</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" name="action" value="post">Poster de suite</button>
+                       
             </form>
         </div>
     </div>

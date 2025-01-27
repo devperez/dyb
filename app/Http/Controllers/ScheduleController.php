@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendMessageJob;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
@@ -14,15 +15,33 @@ class ScheduleController extends Controller
         
         $user = auth()->user();
         
-        $user->scheduledMessages()->create([
-            'user_id' => $user->id,
-            'content' => $message,
-            'send_at' => $scheduled_at,
-            'platforms' => $platforms,
-        ]);
+        
+        $action = $request->input('action');
+        if ($action === 'store') {
+            $newMessage = $user->scheduledMessages()->create([
+                'user_id' => $user->id,
+                'content' => $message,
+                'send_at' => $scheduled_at,
+                'platforms' => $platforms,
+            ]);
+            session()->flash('status', 'Votre message a été programmé avec succès !');
+        } elseif ($action === 'post') {
+            $newMessage = $user->scheduledMessages()->create([
+                'user_id' => $user->id,
+                'content' => $message,
+                'send_at' => now(),
+                'status' => 'sent',
+                'platforms' => $platforms,
+            ]);
 
-        session()->flash('status', 'Votre message a été programmé avec succès !');
-
+            $job = new sendMessageJob();
+            if (in_array('slack', $platforms)) {
+                $job->sendToSlack($newMessage);
+            } elseif (in_array('telegram', $platforms)) {
+                $job->sendToTelegram($newMessage);
+            }
+            session()->flash('status', 'Votre message a été publié avec succès !');
+        }
         return redirect()->route('dashboard');
     }
 }

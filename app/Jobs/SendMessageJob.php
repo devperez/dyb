@@ -47,7 +47,7 @@ class SendMessageJob implements ShouldQueue
         }
     }
 
-    private function sendToSlack(ScheduledMessage $message): void
+    public function sendToSlack(ScheduledMessage $message): void
     {
         // Message content
         $payload = [
@@ -70,7 +70,7 @@ class SendMessageJob implements ShouldQueue
         }
     }
 
-    private function sendToTelegram(ScheduledMessage $message)
+    public function sendToTelegram(ScheduledMessage $message)
     {
         // Telegram API URL
         $apiUrl = "https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage";
