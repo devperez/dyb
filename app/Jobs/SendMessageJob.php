@@ -39,6 +39,11 @@ class SendMessageJob implements ShouldQueue
                 Log::info('Envoi du message à Slack...');
                 $this->sendToSlack($message);
             }
+            if (in_array('telegram', $message->platforms)) {
+                // Send the message to Telegram
+                Log::info('Envoi du message à Telegram...');
+                $this->sendToTelegram($message);
+            }
         }
     }
 
@@ -51,18 +56,44 @@ class SendMessageJob implements ShouldQueue
 
         // Send the message to Slack
         $response = Http::post(env('SLACK_WEBHOOK_URL'), $payload);
-        
-        // Vérifiez si l'envoi a réussi
+
+        // Check if sending went through
         if ($response->successful()) {
-            // Message envoyé avec succès
-            echo 'Message envoyé à Slack avec succès !';
-            // Mark the message as sent
+            Log::info('Message envoyé avec succès à Slack.');
+            // Set the message as sent
             $message->update(['sent_at' => now()]);
             $message->status = 'sent';
             $message->save();
         } else {
-            // Erreur lors de l'envoi
+            // error
             echo 'Erreur lors de l\'envoi du message à Slack.';
+        }
+    }
+
+    private function sendToTelegram(ScheduledMessage $message)
+    {
+        // Telegram API URL
+        $apiUrl = "https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage";
+
+        // Message data
+        $payload = [
+            'chat_id' => env('TELEGRAM_CHANNEL_ID'), // Channel ID
+            'text' => $message->content, // Message
+        ];
+
+        // Send request to Telegram
+        $response = Http::post($apiUrl, $payload);
+
+        // Check if sending went though
+        if ($response->successful()) {
+            Log::info('Message envoyé avec succès à Telegram.');
+
+            // Set message as sent
+            $message->update(['sent_at' => now()]);
+            $message->status = 'sent';
+            $message->save();
+        } else {
+            Log::error('Erreur lors de l\'envoi du message à Telegram : ' . $response->body());
         }
     }
 }
