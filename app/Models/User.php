@@ -45,4 +45,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relationship : a user has many messages
+     */
+    public function scheduledMessages()
+    {
+        return $this->hasMany(ScheduledMessage::class);
+    }
+
+    /**
+     * Relationship : a user has many platform configurations
+     */
+    public function platforms()
+    {
+        return $this->hasMany(UserPlatform::class);
+    }
 }
