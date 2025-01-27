@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendMessageJob;
 use Illuminate\Http\Request;
+use App\Models\ScheduledMessage;
 
 class ScheduleController extends Controller
 {
@@ -37,11 +38,21 @@ class ScheduleController extends Controller
             $job = new sendMessageJob();
             if (in_array('slack', $platforms)) {
                 $job->sendToSlack($newMessage);
-            } elseif (in_array('telegram', $platforms)) {
+            }
+            if (in_array('telegram', $platforms)) {
                 $job->sendToTelegram($newMessage);
             }
             session()->flash('status', 'Votre message a été publié avec succès !');
         }
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('refresh', true);
+    }
+
+    public function update(Request $request, ScheduledMessage $scheduledMessage)
+    {
+        $scheduledMessage->update([
+            'send_at' => $request->send_at,
+        ]);
+
+        return redirect()->route('dashboard')->with('refresh', true);
     }
 }
