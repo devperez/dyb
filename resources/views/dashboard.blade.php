@@ -4,7 +4,12 @@
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
-
+    @if (session('status'))
+        <div id="flash-message"
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-4 rounded-md shadow-lg">
+            {{ session('status') }}
+        </div>
+    @endif
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <form method="POST" action="{{ route('scheduledMessages.store') }}">
@@ -38,5 +43,14 @@
             </form>
         </div>
     </div>
-
+    <script>
+        const flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            setTimeout(function() {
+                flashMessage.classList.add('opacity-0'); // Ajoute l'animation de disparition
+                flashMessage.classList.add('transition-opacity'); // Transition pour l'animation
+                flashMessage.classList.add('duration-300'); // Durée de l'animation
+            }, 3000); // Attend 3 secondes avant de commencer l'animation
+        };
+    </script>
 </x-app-layout>
