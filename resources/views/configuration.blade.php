@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="container mx-auto">
+    <div class="container mx-auto py-12">
         <h2 class="text-2xl font-bold mb-6">Configuration des plateformes</h2>
 
         @if (session('success'))
