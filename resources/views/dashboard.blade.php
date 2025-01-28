@@ -4,12 +4,6 @@
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
-    @if (session('status'))
-        <div id="flash-message"
-            class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-4 rounded-md shadow-lg">
-            {{ session('status') }}
-        </div>
-    @endif
     @if (session('refresh'))
         <script>
             window.location.reload();
@@ -135,15 +129,6 @@
         </div>
     </div>
     <script>
-        const flashMessage = document.getElementById('flash-message');
-        if (flashMessage) {
-            setTimeout(function() {
-                flashMessage.classList.add('opacity-0'); // Ajoute l'animation de disparition
-                flashMessage.classList.add('transition-opacity'); // Transition pour l'animation
-                flashMessage.classList.add('duration-300'); // Durée de l'animation
-            }, 3000); // Attend 3 secondes avant de commencer l'animation
-        };
-
         function editDate(messageId) {
             var dateDisplay = document.getElementById('send_at_' + messageId);
             var input = document.getElementById('send_at_input_' + messageId);

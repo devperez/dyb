@@ -25,7 +25,6 @@ class ScheduleController extends Controller
                 'send_at' => $scheduled_at,
                 'platforms' => $platforms,
             ]);
-            session()->flash('status', 'Votre message a été programmé avec succès !');
         } elseif ($action === 'post') {
             $newMessage = $user->scheduledMessages()->create([
                 'user_id' => $user->id,
@@ -42,7 +41,6 @@ class ScheduleController extends Controller
             if (in_array('telegram', $platforms)) {
                 $job->sendToTelegram($newMessage);
             }
-            session()->flash('status', 'Votre message a été publié avec succès !');
         }
         return redirect()->route('dashboard')->with('refresh', true);
     }
