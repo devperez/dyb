@@ -9,7 +9,23 @@
             window.location.reload();
         </script>
     @endif
-    @if (session('error'))
+    @if ($errors->any())
+        <div class="error-messages">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <div x-data="{ open: true }" x-show="open"
+                        class="max-w-md bg-red-500 text-white p-2 mt-2 rounded flex justify-between items-center mx-auto">
+                        <span>{{ $error }}</span>
+                        <button @click="open = false" class="ml-4 text-white focus:outline-none">
+                            &times;
+                        </button>
+                    </div>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- @if (session('error'))
         <div x-data="{ open: true }" x-show="open"
             class="max-w-md bg-red-500 text-white p-2 rounded flex justify-between items-center mx-auto">
             <span>{{ session('error') }}</span>
@@ -17,7 +33,7 @@
                 &times;
             </button>
         </div>
-    @endif
+    @endif --}}
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

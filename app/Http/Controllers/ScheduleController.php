@@ -10,10 +10,17 @@ class ScheduleController extends Controller
 {
     public function store(Request $request)
     {
-        $message = $request->content;
-        $scheduled_at = $request->send_at;
-        $platforms = $request->platforms;
+        //$platforms = $request->platforms;
+        $validated = $request->validate([
+            'content' => 'required|string|min:5|max:500',
+            'platforms' => 'required|array|min:1',         
+        ]);
+
+        $message = $validated['content'];
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); // Get rid of special characters
         
+        $platforms = $validated['platforms'];
+        $scheduled_at = $request->send_at;
         $user = auth()->user();
 
         if($message && $platforms) {
@@ -44,7 +51,9 @@ class ScheduleController extends Controller
             }
             return redirect()->route('dashboard')->with('refresh', true);
         } else {
-            return redirect()->route('dashboard')->with('error', 'Veuillez remplir le champ Message et choisir au moins un réseau social.');
+            return redirect()->route('dashboard')->withErrors($validator)->withInput();
+
+            //return redirect()->route('dashboard')->with('error', 'Veuillez remplir le champ Message et choisir au moins un réseau social.');
         }
     }
 
