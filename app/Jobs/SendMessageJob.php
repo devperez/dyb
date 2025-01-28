@@ -3,7 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\ScheduledMessage;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -54,46 +56,64 @@ class SendMessageJob implements ShouldQueue
             'text' => $message->content,
         ];
 
-        // Send the message to Slack
-        $response = Http::post(env('SLACK_WEBHOOK_URL'), $payload);
+        $user_id = $message->user_id;
+        $user = User::find($user_id);
+        
+        // Fetch the user's Slack configuration
+        $slackPlatform = $user->platforms()->where('platform', 'slack')->first();
 
-        // Check if sending went through
-        if ($response->successful()) {
-            Log::info('Message envoyé avec succès à Slack.');
-            // Set the message as sent
-            $message->update(['sent_at' => now()]);
-            $message->status = 'sent';
-            $message->save();
-        } else {
-            // error
-            echo 'Erreur lors de l\'envoi du message à Slack.';
+        if ($slackPlatform && isset($slackPlatform->config['webhook'])) {
+            $slackWebhookUrl = $slackPlatform->config['webhook'];
+
+            // Send the message to Slack
+            $response = Http::post($slackWebhookUrl, $payload);
+
+            // Check if sending went through
+            if ($response->successful()) {
+                Log::info('Message envoyé avec succès à Slack.');
+                // Set the message as sent
+                $message->update(['sent_at' => now()]);
+                $message->status = 'sent';
+                $message->save();
+            } else {
+                // error
+                echo 'Erreur lors de l\'envoi du message à Slack.';
+            }
         }
     }
 
     public function sendToTelegram(ScheduledMessage $message)
     {
-        // Telegram API URL
-        $apiUrl = "https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage";
+        // Fetch the user's Telegram configuration
+        $telegramPlatform = $message->user->platforms()->where('platform', 'telegram')->first();
 
-        // Message data
-        $payload = [
-            'chat_id' => env('TELEGRAM_CHANNEL_ID'), // Channel ID
-            'text' => $message->content, // Message
-        ];
+        // Check if the user has a configuration for Telegram
+        if ($telegramPlatform && isset($telegramPlatform->config['bot_token']) && isset($telegramPlatform->config['chat_id'])) {
+            // Telegram API URL
+            $apiUrl = "https://api.telegram.org/bot" . $telegramPlatform->config['bot_token'] . "/sendMessage";
 
-        // Send request to Telegram
-        $response = Http::post($apiUrl, $payload);
+            // Message data
+            $payload = [
+                'chat_id' => $telegramPlatform->config['chat_id'], // Chat ID
+                'text' => $message->content, // Message content
+            ];
 
-        // Check if sending went though
-        if ($response->successful()) {
-            Log::info('Message envoyé avec succès à Telegram.');
+            // Send the request
+            $response = Http::post($apiUrl, $payload);
 
-            // Set message as sent
-            $message->update(['sent_at' => now()]);
-            $message->status = 'sent';
-            $message->save();
+            // Check if sending went through
+            if ($response->successful()) {
+                Log::info('Message envoyé avec succès à Telegram.');
+
+                // Set the message as sent
+                $message->update(['sent_at' => now()]);
+                $message->status = 'sent';
+                $message->save();
+            } else {
+                Log::error('Erreur lors de l\'envoi du message à Telegram : ' . $response->body());
+            }
         } else {
-            Log::error('Erreur lors de l\'envoi du message à Telegram : ' . $response->body());
+            Log::error('Aucune configuration Telegram trouvée pour cet utilisateur.');
         }
     }
 }
