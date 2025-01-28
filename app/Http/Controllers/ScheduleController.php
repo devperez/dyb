@@ -15,34 +15,37 @@ class ScheduleController extends Controller
         $platforms = $request->platforms;
         
         $user = auth()->user();
-        
-        
-        $action = $request->input('action');
-        if ($action === 'store') {
-            $newMessage = $user->scheduledMessages()->create([
+
+        if($message && $platforms) {
+            $action = $request->input('action');
+            if ($action === 'store') {
+                $newMessage = $user->scheduledMessages()->create([
                 'user_id' => $user->id,
                 'content' => $message,
                 'send_at' => $scheduled_at,
                 'platforms' => $platforms,
-            ]);
-        } elseif ($action === 'post') {
-            $newMessage = $user->scheduledMessages()->create([
-                'user_id' => $user->id,
-                'content' => $message,
-                'send_at' => now(),
-                'status' => 'sent',
-                'platforms' => $platforms,
-            ]);
+                ]);
+            } elseif ($action === 'post') {
+                $newMessage = $user->scheduledMessages()->create([
+                    'user_id' => $user->id,
+                    'content' => $message,
+                    'send_at' => now(),
+                    'status' => 'sent',
+                    'platforms' => $platforms,
+                ]);
 
-            $job = new sendMessageJob();
-            if (in_array('slack', $platforms)) {
-                $job->sendToSlack($newMessage);
+                $job = new sendMessageJob();
+                if (in_array('slack', $platforms)) {
+                    $job->sendToSlack($newMessage);
+                }
+                if (in_array('telegram', $platforms)) {
+                    $job->sendToTelegram($newMessage);
+                }
             }
-            if (in_array('telegram', $platforms)) {
-                $job->sendToTelegram($newMessage);
-            }
+            return redirect()->route('dashboard')->with('refresh', true);
+        } else {
+            return redirect()->route('dashboard')->with('error', 'Veuillez remplir le champ Message et choisir au moins un réseau social.');
         }
-        return redirect()->route('dashboard')->with('refresh', true);
     }
 
     public function update(Request $request, ScheduledMessage $scheduledMessage)

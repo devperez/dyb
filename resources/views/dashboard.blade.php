@@ -9,6 +9,15 @@
             window.location.reload();
         </script>
     @endif
+    @if (session('error'))
+        <div x-data="{ open: true }" x-show="open"
+            class="max-w-md bg-red-500 text-white p-2 rounded flex justify-between items-center mx-auto">
+            <span>{{ session('error') }}</span>
+            <button @click="open = false" class="ml-4 text-white focus:outline-none">
+                &times;
+            </button>
+        </div>
+    @endif
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -73,7 +82,7 @@
                                         </th>
                                     </tr>
                                 </thead>
-                                
+
                                 <tbody>
                                     @foreach ($messages as $message)
                                         <tr class="bg-white border-b hover:bg-gray-50">
@@ -99,8 +108,9 @@
                                                         value="{{ \Carbon\Carbon::parse($message->send_at)->format('Y-m-d\TH:i') }}"
                                                         class="w-full mt-2">
                                                     <button type="submit"
-                                                    class="text-white bg-blue-500 px-2 py-2 rounded-md hover:bg-blue-600 mt-2">Enregistrer</button>
-                                                    <button type="button" class="text-white bg-red-500 px-2 py-2 rounded-md hover:bg-red-600""
+                                                        class="text-white bg-blue-500 px-2 py-2 rounded-md hover:bg-blue-600 mt-2">Enregistrer</button>
+                                                    <button type="button"
+                                                        class="text-white bg-red-500 px-2 py-2 rounded-md hover:bg-red-600""
                                                         onclick="cancelEdit({{ $message->id }})">Annuler</button>
                                                 </form>
                                             </td>
